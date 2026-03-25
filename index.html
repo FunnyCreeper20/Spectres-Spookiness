@@ -31,6 +31,24 @@
             box-sizing: border-box;
         }
 
+        .viewportFlash {
+            position: fixed;
+            inset: 0;
+            border-radius: 0;
+            box-shadow: inset 0 0 0 rgba(255, 0, 0, 0);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .app.themeFlash {
+            animation: pageShake 0.32s ease-in-out;
+        }
+
+        .viewportFlash.themeFlash {
+            animation: pageOutlineFlash 0.5s ease-out;
+        }
+
         .binaryBackground {
             position: fixed;
             inset: 0;
@@ -71,6 +89,32 @@
             }
             to {
                 transform: translateY(240vh);
+            }
+        }
+
+        @keyframes pageShake {
+            0%, 100% { transform: translate3d(0, 0, 0); }
+            20% { transform: translate3d(-5px, 2px, 0); }
+            40% { transform: translate3d(6px, -3px, 0); }
+            60% { transform: translate3d(-4px, -2px, 0); }
+            80% { transform: translate3d(4px, 3px, 0); }
+        }
+
+        @keyframes pageOutlineFlash {
+            0% {
+                opacity: 0;
+                box-shadow: inset 0 0 0 rgba(255, 0, 0, 0);
+            }
+            35% {
+                opacity: 1;
+                box-shadow:
+                    inset 0 0 32px rgba(255, 40, 40, 0.38),
+                    inset 0 0 80px rgba(140, 0, 0, 0.2),
+                    inset 0 0 140px rgba(90, 0, 0, 0.12);
+            }
+            100% {
+                opacity: 0;
+                box-shadow: inset 0 0 0 rgba(255, 0, 0, 0);
             }
         }
 
@@ -255,6 +299,7 @@
 
 <body>
     <div class="binaryBackground" id="binaryBackground" aria-hidden="true"></div>
+    <div class="viewportFlash" id="viewportFlash" aria-hidden="true"></div>
     <main class="app">
         <button id="fancyButton" type="button">Generate OST</button>
         <div class="info">
@@ -275,7 +320,9 @@
 
     <script>
         const button = document.getElementById('fancyButton');
+        const app = document.querySelector('.app');
         const binaryBackground = document.getElementById('binaryBackground');
+        const viewportFlash = document.getElementById('viewportFlash');
         const nameDisplay = document.getElementById('name');
         const participantsDisplay = document.getElementById('participants');
         const videoFallback = document.getElementById('videoFallback');
@@ -296,7 +343,7 @@
             ["https://youtu.be/x492r4IUSbA?list=RDx492r4IUSbA", "FOR OLD TIMES SAKE", "Crazyblox 1x1x1x1 vs The Guide Shedletsky"],
             ["https://youtu.be/fivsLkKvkjI?list=RDfivsLkKvkjI", "Profitable Passion", "Anyone vs Any Golden Skin"],
             ["https://www.youtube.com/watch?v=Fahyr3DQV2M", "You and I", "John Doe vs Jane Doe"]
-        ];
+        ]
         const listOfVIPLMS = [ // Has 6 items and all require the VIP pass to access
             ["https://www.youtube.com/watch?v=nKs6LZzaEdE", "[VIP] Hero", "Sancho vs Anyone"],
             ["https://www.youtube.com/watch?v=YWMtuE_npzQ", "[VIP] A Creation of Sorrow", "Erlking vs Anyone"],
@@ -304,7 +351,7 @@
             ["https://www.youtube.com/watch?v=56qLZ5ncJv8", "[VIP] More Guns Reversed", "Shedletsky vs Anyone"], //This doesn't actually have an LMS name, but it is Team fortress 2 more guns, but in reverse
             ["https://www.youtube.com/watch?v=3wAX9rdSvOY", "[VIP] Eternal Hope, Eternal Fight", "Friday 13th Slasher or Dexter Slasher vs Anyone"],
             ["https://www.youtube.com/watch?v=krgCnLF5dtw", "[VIP] Faith's Answer", "March 18th John Doe vs Anyone"],
-        ];
+        ]
         const goneLMS = [ // Has 6 items and all are no longer in the game
             ["https://www.youtube.com/watch?v=L7D34ut7wxA", "[REMOVED] YOUR.PROBLEM", "JX1DX1 Noli vs IHasAFaceLULZ Noob or Aubree Noob"],
             ["https://www.youtube.com/watch?v=vq2AfGYwbE4", "[REMOVED] Eternal Hope, Eternal Fight", "Anyone vs Anyone"],
@@ -314,7 +361,32 @@
             ["https://www.youtube.com/watch?v=oa5gWk0aRak", "[SCRAPPED] Made Just For You", "Bluudud c00lkidd vs 118o8 007n7"],
         ]
 
-        const lms = listOfLMS.concat(listOfVIPLMS).concat(goneLMS);
+        const goneChase = [ //Dawg im not dealing with ts count anymore, just make a guess ig
+            ["https://www.youtube.com/watch?v=oDcABxll3_E", "[REMOVED] Mama's Boy", "Jason"],
+            ["https://www.youtube.com/watch?v=lX_HMaLF2iU", "[REMOVED] A Kill for Mother", "Jason / Slasher"],
+            ["https://www.youtube.com/watch?v=oEBASCqr9BE", "[REMOVED] Don't Touch My Chainsaw", "Jason / Slasher"],
+            ["https://www.youtube.com/watch?v=rBUbCiiw3P8", "[REMOVED] Killer Vanity", "Vanity Jason"],
+            ["https://www.youtube.com/watch?v=0NIiBoLOgRc", "[REMOVED] You and your friends are dead", "Retro Jason"],
+            ["https://www.youtube.com/watch?v=6fxayuIYs-Q", "[REMOVED] CABIN FEVER", "Retro Jason"], //There are genuinely so many retro jason themes like what were the developers thinking
+            ["https://www.youtube.com/watch?v=uhU7PTsY8Yo", "[REMOVED] Initiative Massacre", "Combat Initiation Jason"],
+            ["https://www.youtube.com/watch?v=vPlmMv_5ieA", "[SCRAPPED] Mystic CI Slasher Chase Theme", "Mystic CI Slasher"],
+            ["https://www.youtube.com/watch?v=sV2HUXS0buA", "[REMOVED] Milestone 3/4 Jason Chase Theme", "Milestone IV Jason & Milestone III Jason"],
+            ["https://www.youtube.com/watch?v=dyLOV0K2FhM", "[REMOVED] Ceaseless Jollity", "c00lkidd"],
+            ["https://www.youtube.com/watch?v=t7hWPCJXBDc", "[REMOVED] Made Man Anthem", "Mafioso c00lkidd"],
+            ["https://www.youtube.com/watch?v=UNuF_7v716g", "[REMOVED] I DID IT FOR YOU", "Savior c00lkidd"],
+            ["https://www.youtube.com/watch?v=iXMRjrS4F94", "[SCRAPPED] Peeler Chase Theme", "Peeler c00lkidd"],
+            ["https://www.youtube.com/watch?v=IGyAEETMH-A", "[SCRAPPED] Ready You Were", "Grollusiam c00lkidd"],
+            ["https://www.youtube.com/watch?v=WJO3U6RnzCA", "[REMOVED] Severe Storm Warning", "1x1x1x1"],
+            ["https://www.youtube.com/watch?v=V82pwXyESEc", "[REMOVED] Unmistakable", "Champion 1x1x1x1"],
+            ["https://www.youtube.com/watch?v=Tfl85_FNW00", "[REMOVED] Infernus Monochromatica", "Classic 1x1x1x1, Infernum 1x1x1x1, or Monochrome 1x1x1x1"]
+        ]
+
+        const listOfChase = [
+            ["https://www.youtube.com/watch?v=CuKgKLkSsy0", "1989", "Retro Jason"],
+            ["https://www.youtube.com/watch?v=D9tLX2mIxkQ","Domino Effect","Primordial 1x1x1x1"], //I genuinely thought this got deleted
+            ["", "", ""],
+        ]
+        const lms = goneChase.concat(listOfLMS, listOfVIPLMS, goneLMS, listOfChase);
         let lastSelectedIndex = -1;
 
         function createBinaryRain() {
@@ -381,9 +453,25 @@
             }
         }
 
+        function playThemeFlash() {
+            app.classList.remove('themeFlash');
+            viewportFlash.classList.remove('themeFlash');
+            void app.offsetWidth;
+            app.classList.add('themeFlash');
+            viewportFlash.classList.add('themeFlash');
+        }
+
         createBinaryRain();
 
         button.addEventListener('click', () => {
+            if (lms.length === 0) {
+                nameDisplay.textContent = 'No valid songs found';
+                participantsDisplay.textContent = 'Add a valid entry to the active list';
+                videoPlayer.removeAttribute('src');
+                videoFallback.href = '#';
+                return;
+            }
+
             let randomIndex = Math.floor(Math.random() * lms.length);
 
             if (lms.length > 1) {
@@ -399,6 +487,7 @@
             nameDisplay.textContent = selectedLMS[1];
             participantsDisplay.textContent = selectedLMS[2];
             videoFallback.href = selectedLMS[0];
+            playThemeFlash();
 
             if (!embedUrl) {
                 videoPlayer.removeAttribute('src');
